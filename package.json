@@ -1,0 +1,15 @@
+{
+  "name": "react-boilerplate",
+  "version": "1.0.0",
+  "description": "Generate Minimal React Boilerplate using webpack and all required loaders (Currently only in Typescript).",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "author": "Shubham Vishwakarma",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "inquirer": "^7.3.3"
+  }
+}
