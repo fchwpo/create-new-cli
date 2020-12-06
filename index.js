@@ -23,8 +23,6 @@ const readAllConfigDir = async () => {
 
 (async () => {
     await readAllConfigDir();
-    log(configFiles);
-    log(configFolderPath);
     const {
         framework,
         language,
@@ -34,7 +32,6 @@ const readAllConfigDir = async () => {
     } = await askQuestions();
     const dependencies = [];
     const devDependencies = [];
-    console.log(framework, language, webpackSetup, gitInit, envFilesPattern);
     if (language === 'ts') {
         const spinner = ora('Setting up Typescript').start();
         const config = await readFile(
@@ -61,11 +58,10 @@ const readAllConfigDir = async () => {
         await writeFile(webpackConfig, config.toString());
         spinner.succeed('Webpack Configured Successfully');
     }
-    console.log(dependencies, dependencies.join(" "));
     const depSpinner = ora('Installing Dependencies').start();
-    await execShPromise(`npm i -S ${dependencies.join(" ")}`);
+    await execShPromise(`npm i -S ${dependencies.join(" ")} --no-progress --quiet`);
     depSpinner.succeed();
     const devSpinner = ora('Installing Dev Dependencies').start();
-    await execShPromise(`npm i -S ${devDependencies.join(" ")}`);
+    await execShPromise(`npm i -D ${devDependencies.join(" ")} --no-progress --quiet`);
     devSpinner.succeed();
 })();
