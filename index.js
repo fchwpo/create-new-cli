@@ -1,8 +1,10 @@
-const { exec } = require('child_process');
+const ora = require('ora');
 const path = require('path');
 const { askQuestions } = require('./ask');
 const { getPackages } = require('./utils/getPackages');
 const { readConfigFilesInFolder } = require('./utils/readConfigFiles');
+const execSh = require('exec-sh');
+const execShPromise = execSh.promise;
 const log = console.log;
 const { writeFile, readFile, mkdir, readdir } = require('fs').promises;
 
@@ -34,6 +36,7 @@ const readAllConfigDir = async () => {
     const devDependencies = [];
     console.log(framework, language, webpackSetup, gitInit, envFilesPattern);
     if (language === 'ts') {
+        const spinner = ora('Setting up Typescript').start();
         const config = await readFile(
             configFolderPath['typescript'] +
                 '/' +
@@ -44,7 +47,7 @@ const readAllConfigDir = async () => {
         dependencies.push([...reqPackages.normal]);
         devDependencies.push([...reqPackages.dev]);
         await writeFile(tsconfig, config.toString());
-        log('tsconfig.json Created Successfully');
+        spinner.succeed('Typescript Configured');
     }
     if (webpackSetup) {
         const config = await readFile(
@@ -58,6 +61,13 @@ const readAllConfigDir = async () => {
         log('webpack Setup Successfully');
     }
     console.log(dependencies, devDependencies);
-    exec(`npm i -S ${dependencies.join(" ")}`);
-    exec(`npm i -D ${devDependencies.join(" ")}`)
+    const modSpinner = ora('Installing Required Modules').start();
+    const devSpinner = ora('Installing Dev Dependencies').start();
+    const depSpinner = ora('Installing Dependencies').start();
+    // exec
+    await Promise.all([
+        execShPromise(`npm i -S ${dependencies.join(" ")}`, true).then(depSpinner.succeed),
+        execShPromise(`npm i -S ${devDependencies.join(" ")}`, true).then(devSpinner.succeed)
+    ])
+    modSpinner.succeed();
 })();

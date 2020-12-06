@@ -10,6 +10,8 @@
   "license": "MIT",
   "dependencies": {
     "chalk": "^4.1.0",
-    "inquirer": "^7.3.3"
+    "exec-sh": "^0.3.4",
+    "inquirer": "^7.3.3",
+    "ora": "^5.1.0"
   }
 }
