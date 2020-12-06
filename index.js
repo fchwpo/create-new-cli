@@ -1,6 +1,7 @@
 const { exec } = require('child_process');
 const path = require('path');
 const { askQuestions } = require('./ask');
+const { getPackages } = require('./utils/getPackages');
 const { readConfigFilesInFolder } = require('./utils/readConfigFiles');
 const log = console.log;
 const { writeFile, readFile, mkdir, readdir } = require('fs').promises;
@@ -29,6 +30,8 @@ const readAllConfigDir = async () => {
         gitInit,
         envFilesPattern,
     } = await askQuestions();
+    const dependencies = [];
+    const devDependencies = [];
     console.log(framework, language, webpackSetup, gitInit, envFilesPattern);
     if (language === 'ts') {
         const config = await readFile(
@@ -36,8 +39,10 @@ const readAllConfigDir = async () => {
                 '/' +
                 configFiles['typescript'][framework === 'react' ? 1 : 0],
         );
-        exec("sh scripts/typescript.sh");
         const tsconfig = path.join(process.cwd(), 'tsconfig.json');
+        const reqPackages = getPackages('ts');
+        dependencies.push([...reqPackages.normal]);
+        devDependencies.push([...reqPackages.dev]);
         await writeFile(tsconfig, config.toString());
         log('tsconfig.json Created Successfully');
     }
@@ -46,8 +51,13 @@ const readAllConfigDir = async () => {
             `${configFolderPath['webpack']}/webpack.config.${language}`
         );
         const webpackConfig = path.join(process.cwd(), `webpack.config.${language}`);
+        const reqPackages = getPackages('react-ts');
+        dependencies.push([...reqPackages.normal]);
+        devDependencies.push([...reqPackages.dev]);
         await writeFile(webpackConfig, config.toString());
-        exec(`sh scripts/react-${language}.sh`);
         log('webpack Setup Successfully');
     }
+    console.log(dependencies, devDependencies);
+    exec(`npm i -S ${dependencies.join(" ")}`);
+    exec(`npm i -D ${devDependencies.join(" ")}`)
 })();
