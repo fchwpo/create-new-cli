@@ -36,8 +36,8 @@ const readAllConfigDir = async () => {
     let scripts = {};
     if (language === 'ts') {
         scripts = {
-            ...getScripts('ts')
-        }
+            ...getScripts('ts'),
+        };
         const spinner = ora('Setting up Typescript').start();
         const config = await readFile(
             configFolderPath['typescript'] +
@@ -53,13 +53,16 @@ const readAllConfigDir = async () => {
     }
     if (webpackSetup) {
         scripts = {
-            ...getScripts('react-ts')
-        }
+            ...getScripts('react-ts'),
+        };
         const spinner = ora('Setting up Webpack').start();
         const config = await readFile(
-            `${configFolderPath['webpack']}/webpack.config.${language}`
+            `${configFolderPath['webpack']}/webpack.config.${language}`,
         );
-        const webpackConfig = path.join(process.cwd(), `webpack.config.${language}`);
+        const webpackConfig = path.join(
+            process.cwd(),
+            `webpack.config.${language}`,
+        );
         const reqPackages = getPackages('react-ts');
         dependencies.push(...reqPackages.normal);
         devDependencies.push(...reqPackages.dev);
@@ -68,9 +71,13 @@ const readAllConfigDir = async () => {
     }
     await addNpmScripts(scripts);
     const depSpinner = ora('Installing Dependencies').start();
-    await execShPromise(`npm i -S ${dependencies.join(" ")} --no-progress --quiet`);
+    await execShPromise(
+        `npm i -S ${dependencies.join(' ')} --no-progress --quiet`,
+    );
     depSpinner.succeed();
     const devSpinner = ora('Installing Dev Dependencies').start();
-    await execShPromise(`npm i -D ${devDependencies.join(" ")} --no-progress --quiet`);
+    await execShPromise(
+        `npm i -D ${devDependencies.join(' ')} --no-progress --quiet`,
+    );
     devSpinner.succeed();
 })();
