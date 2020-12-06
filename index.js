@@ -44,30 +44,28 @@ const readAllConfigDir = async () => {
         );
         const tsconfig = path.join(process.cwd(), 'tsconfig.json');
         const reqPackages = getPackages('ts');
-        dependencies.push([...reqPackages.normal]);
-        devDependencies.push([...reqPackages.dev]);
+        dependencies.push(...reqPackages.normal);
+        devDependencies.push(...reqPackages.dev);
         await writeFile(tsconfig, config.toString());
-        spinner.succeed('Typescript Configured');
+        spinner.succeed('Typescript Configured Successfully');
     }
     if (webpackSetup) {
+        const spinner = ora('Setting up Webpack').start();
         const config = await readFile(
             `${configFolderPath['webpack']}/webpack.config.${language}`
         );
         const webpackConfig = path.join(process.cwd(), `webpack.config.${language}`);
         const reqPackages = getPackages('react-ts');
-        dependencies.push([...reqPackages.normal]);
-        devDependencies.push([...reqPackages.dev]);
+        dependencies.push(...reqPackages.normal);
+        devDependencies.push(...reqPackages.dev);
         await writeFile(webpackConfig, config.toString());
-        log('webpack Setup Successfully');
+        spinner.succeed('Webpack Configured Successfully');
     }
-    console.log(dependencies, devDependencies);
-    const modSpinner = ora('Installing Required Modules').start();
-    const devSpinner = ora('Installing Dev Dependencies').start();
+    console.log(dependencies, dependencies.join(" "));
     const depSpinner = ora('Installing Dependencies').start();
-    // exec
-    await Promise.all([
-        execShPromise(`npm i -S ${dependencies.join(" ")}`, true).then(depSpinner.succeed),
-        execShPromise(`npm i -S ${devDependencies.join(" ")}`, true).then(devSpinner.succeed)
-    ])
-    modSpinner.succeed();
+    await execShPromise(`npm i -S ${dependencies.join(" ")}`);
+    depSpinner.succeed();
+    const devSpinner = ora('Installing Dev Dependencies').start();
+    await execShPromise(`npm i -S ${devDependencies.join(" ")}`);
+    devSpinner.succeed();
 })();
