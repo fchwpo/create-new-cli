@@ -4,9 +4,10 @@ const { askQuestions } = require('./ask');
 const { getPackages } = require('./utils/getPackages');
 const { readConfigFilesInFolder } = require('./utils/readConfigFiles');
 const execSh = require('exec-sh');
+const { getScripts } = require('./utils/getScripts');
+const { addNpmScripts } = require('./utils/addScripts');
 const execShPromise = execSh.promise;
-const log = console.log;
-const { writeFile, readFile, mkdir, readdir } = require('fs').promises;
+const { writeFile, readFile } = require('fs').promises;
 
 const configFolderPath = {
     typescript: path.resolve(__dirname, 'config/typescript'),
@@ -32,7 +33,11 @@ const readAllConfigDir = async () => {
     } = await askQuestions();
     const dependencies = [];
     const devDependencies = [];
+    let scripts = {};
     if (language === 'ts') {
+        scripts = {
+            ...getScripts('ts')
+        }
         const spinner = ora('Setting up Typescript').start();
         const config = await readFile(
             configFolderPath['typescript'] +
@@ -47,6 +52,9 @@ const readAllConfigDir = async () => {
         spinner.succeed('Typescript Configured Successfully');
     }
     if (webpackSetup) {
+        scripts = {
+            ...getScripts('react-ts')
+        }
         const spinner = ora('Setting up Webpack').start();
         const config = await readFile(
             `${configFolderPath['webpack']}/webpack.config.${language}`
@@ -58,6 +66,7 @@ const readAllConfigDir = async () => {
         await writeFile(webpackConfig, config.toString());
         spinner.succeed('Webpack Configured Successfully');
     }
+    await addNpmScripts(scripts);
     const depSpinner = ora('Installing Dependencies').start();
     await execShPromise(`npm i -S ${dependencies.join(" ")} --no-progress --quiet`);
     depSpinner.succeed();
